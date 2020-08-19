@@ -88,7 +88,7 @@ fi
 #export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
 
 # some more ls aliases
-alias ll='ls -alF'
+alias ll='ls -alFh'
 alias la='ls -A'
 alias l='ls -CF'
 
@@ -121,7 +121,27 @@ LS_COLORS='di=36:fi=0:ln=31:pi=5:so=5:bd=5:cd=5:or=31:mi=0:ex=35'
 alias drm='docker rm $(docker ps -a -q)'
 alias dstop='docker stop $(docker ps -a -q)'
 alias dps='docker ps'
-alias dpsa='docker ps -a'
+alias dpsa='docker ps -a --format "table {{.ID}} {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}"'
 alias create_school='docker stop quizz; docker rm quizz; docker run --name quizz -it manu/quizz bash; docker commit quizz manu/quizz; docker build -t manu/school .; ~/restart_school.sh'
-alias drmi='docker images  | grep "<none>" | cut -c 42- | cut -c -12 | xargs docker rmi'
+#alias drmi='docker images  | grep "<none>" | cut -c 42- | cut -c -12 | xargs docker rmi'
+alias drmi='docker images  | grep "<none>" | cut -c 69- | cut -c -12 | xargs docker rmi'
 alias dstats='docker stats $(docker ps --format "{{.Names}}")'
+alias dstats_new='while true; do clear; docker stats --no-stream $(docker ps --format "{{.Names}}"); df -h; sleep 5; done'
+alias crafty='cd /data/docker/data/crafty/'
+alias docker_ips="docker ps -a --format \"{{ .Names }}\"  | xargs -I '{}' sh -c \"echo -n {}: ; docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' {}\""
+
+crafty_prod() {
+    docker exec -it -w /app/logs/PROD/ $@ sh
+}
+
+alias certificate_expiration="ls /etc/letsencrypt/live/*/cert.pem | xargs -I '{}' sh -c \"echo -n {}:; openssl x509 -enddate -noout -in {}\""
+alias jekyll_watch='docker run --rm --volume="$PWD:/srv/jekyll" -it jekyll/jekyll jekyll build --watch'
+alias jekyll_cd='cd /var/www/jekyll/; cd `pwd -P`;'
+
+
+alias kpods='kubectl get pods'
+alias kubectl_debug="kubectl run -i --tty --rm debug --image=alpine --restart=Never -- sh"
+alias kubectl_restart_crafty="kubectl delete pods $(kubectl get pods --output=name | grep crafty | sed 's/pod\///')"
+
+source <(kubectl completion bash)
+source <(helm completion bash)
