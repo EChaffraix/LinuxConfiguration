@@ -118,30 +118,27 @@ fi
 
 LS_COLORS='di=36:fi=0:ln=31:pi=5:so=5:bd=5:cd=5:or=31:mi=0:ex=35'
 
-alias drm='docker rm $(docker ps -a -q)'
-alias dstop='docker stop $(docker ps -a -q)'
-alias dps='docker ps'
-alias dpsa='docker ps -a --format "table {{.ID}} {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}"'
-alias create_school='docker stop quizz; docker rm quizz; docker run --name quizz -it manu/quizz bash; docker commit quizz manu/quizz; docker build -t manu/school .; ~/restart_school.sh'
-#alias drmi='docker images  | grep "<none>" | cut -c 42- | cut -c -12 | xargs docker rmi'
-alias drmi='docker images  | grep "<none>" | cut -c 69- | cut -c -12 | xargs docker rmi'
-alias dstats='docker stats $(docker ps --format "{{.Names}}")'
-alias dstats_new='while true; do clear; docker stats --no-stream $(docker ps --format "{{.Names}}"); df -h; sleep 5; done'
-alias crafty='cd /data/docker/data/crafty/'
-alias docker_ips="docker ps -a --format \"{{ .Names }}\"  | xargs -I '{}' sh -c \"echo -n {}: ; docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' {}\""
-
-crafty_prod() {
-    docker exec -it -w /app/logs/PROD/ $@ sh
-}
+if command -v docker > /dev/null; then
+	alias drm='docker rm $(docker ps -a -q)'
+	alias dstop='docker stop $(docker ps -a -q)'
+	alias dps='docker ps'
+	alias dpsa='docker ps -a --format "table {{.ID}} {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}"'
+	alias drmi='docker images  | grep "<none>" | cut -c 69- | cut -c -12 | xargs docker rmi'
+	alias dstats='docker stats $(docker ps --format "{{.Names}}")'
+	alias dstats_new='while true; do clear; docker stats --no-stream $(docker ps --format "{{.Names}}"); df -h; sleep 5; done'
+	alias docker_ips="docker ps -a --format \"{{ .Names }}\"  | xargs -I '{}' sh -c \"echo -n {}: ; docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' {}\""
+fi
 
 alias certificate_expiration="ls /etc/letsencrypt/live/*/cert.pem | xargs -I '{}' sh -c \"echo -n {}:; openssl x509 -enddate -noout -in {}\""
-alias jekyll_watch='docker run --rm --volume="$PWD:/srv/jekyll" -it jekyll/jekyll jekyll build --watch'
-alias jekyll_cd='cd /var/www/jekyll/; cd `pwd -P`;'
 
+if command -v kubectl > /dev/null; then
+	alias kpods='kubectl get pods'
+	alias kubectl_debug="kubectl run -i --tty --rm debug --image=alpine --restart=Never -- sh"
+	alias kubectl_restart_crafty="kubectl delete pods $(kubectl get pods --output=name | grep crafty | sed 's/pod\///')"
 
-alias kpods='kubectl get pods'
-alias kubectl_debug="kubectl run -i --tty --rm debug --image=alpine --restart=Never -- sh"
-alias kubectl_restart_crafty="kubectl delete pods $(kubectl get pods --output=name | grep crafty | sed 's/pod\///')"
+	source <(kubectl completion bash)
+fi
 
-source <(kubectl completion bash)
-source <(helm completion bash)
+if command -v helm > /dev/null; then
+	source <(helm completion bash)
+fi
